@@ -1,14 +1,16 @@
 package com.example.ehrsystem.modules.auth.service;
 
-
 import com.example.ehrsystem.modules.auth.dto.request.LoginRequest;
 import com.example.ehrsystem.modules.auth.dto.request.RegisterRequest;
 import com.example.ehrsystem.modules.auth.dto.response.AuthResponse;
+import com.example.ehrsystem.modules.auth.security.JwtService;
 import com.example.ehrsystem.modules.role.entity.Role;
 import com.example.ehrsystem.modules.role.service.RoleService;
 import com.example.ehrsystem.modules.user.entity.User;
 import com.example.ehrsystem.modules.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,7 @@ public class AuthService {
     private final UserService userService;
     private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -62,7 +65,9 @@ public class AuthService {
 
         User savedUser = userService.save(user);
 
-        return buildAuthResponse(savedUser, null);
+        String token = jwtService.generateToken(buildUserDetails(savedUser));
+
+        return buildAuthResponse(savedUser, token);
     }
 
     @Transactional(readOnly = true)
@@ -81,7 +86,24 @@ public class AuthService {
             throw new IllegalArgumentException("User account is locked");
         }
 
-        return buildAuthResponse(user, null);
+        String token = jwtService.generateToken(buildUserDetails(user));
+
+        return buildAuthResponse(user, token);
+    }
+
+    private UserDetails buildUserDetails(User user) {
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password(user.getPasswordHash())
+                .authorities(
+                        user.getRoles()
+                                .stream()
+                                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                                .collect(Collectors.toSet())
+                )
+                .accountLocked(Boolean.TRUE.equals(user.getIsAccountLocked()))
+                .disabled(Boolean.FALSE.equals(user.getIsActive()))
+                .build();
     }
 
     private AuthResponse buildAuthResponse(User user, String accessToken) {
