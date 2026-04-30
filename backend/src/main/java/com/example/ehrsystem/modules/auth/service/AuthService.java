@@ -9,12 +9,15 @@ import com.example.ehrsystem.modules.role.service.RoleService;
 import com.example.ehrsystem.modules.user.entity.User;
 import com.example.ehrsystem.modules.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,6 +29,7 @@ public class AuthService {
     private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -38,11 +42,7 @@ public class AuthService {
             throw new IllegalArgumentException("Username is already taken");
         }
 
-        String roleName = (request.getRoleName() == null || request.getRoleName().isBlank())
-                ? "PATIENT"
-                : request.getRoleName().trim().toUpperCase();
-
-        Role role = roleService.getByName(roleName);
+        Role role = roleService.getByName("PATIENT");
 
         User user = User.builder()
                 .firstName(request.getFirstName().trim())
@@ -70,21 +70,19 @@ public class AuthService {
         return buildAuthResponse(savedUser, token);
     }
 
-    @Transactional(readOnly = true)
-    public AuthResponse login(LoginRequest request) {
-        User user = userService.getByEmail(request.getEmail().trim().toLowerCase());
+    @Transactional
+    public AuthResponse login(LoginRequest request, String remoteAddress) {
+        String email = request.getEmail().trim().toLowerCase();
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid email or password");
-        }
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, request.getPassword())
+        );
 
-        if (Boolean.FALSE.equals(user.getIsActive())) {
-            throw new IllegalArgumentException("User account is inactive");
-        }
+        User user = userService.getByEmail(email);
 
-        if (Boolean.TRUE.equals(user.getIsAccountLocked())) {
-            throw new IllegalArgumentException("User account is locked");
-        }
+        user.setLastLoginAt(LocalDateTime.now());
+        user.setLastLoginIp(remoteAddress);
+        userService.save(user);
 
         String token = jwtService.generateToken(buildUserDetails(user));
 

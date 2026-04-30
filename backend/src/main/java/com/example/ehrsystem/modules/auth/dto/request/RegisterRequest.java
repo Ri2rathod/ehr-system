@@ -40,7 +40,4 @@ public class RegisterRequest {
 
     @Size(max = 20, message = "Phone number must not exceed 20 characters")
     private String phoneNumber;
-
-    @Size(max = 50, message = "Role name must not exceed 50 characters")
-    private String roleName;
 }

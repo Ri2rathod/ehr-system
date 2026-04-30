@@ -28,4 +28,15 @@ public class TestController {
                 "authorities", authentication.getAuthorities()
         );
     }
+
+    @GetMapping("/admin")
+    public Map<String, Object> adminEndpoint(Authentication authentication) {
+        return Map.of(
+                "message", "Admin endpoint accessed successfully",
+                "secured", true,
+                "role", "ADMIN",
+                "authenticatedUser", authentication.getName(),
+                "authorities", authentication.getAuthorities()
+        );
+    }
 }

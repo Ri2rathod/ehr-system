@@ -31,6 +31,11 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found with email: " + email));
     }
 
+    public User getByEmailWithRoles(String email) {
+        return userRepository.findByEmailWithRoles(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with email: " + email));
+    }
+
     public User getByUsername(String username) {
         return userRepository.findByUsernameAndDeletedAtIsNull(username)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));
