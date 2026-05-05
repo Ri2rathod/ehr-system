@@ -103,7 +103,7 @@ CREATE INDEX idx_user_roles_role_id ON user_roles(role_id);
 
 -- Seed default roles
 INSERT INTO roles (name, description) VALUES
-                      ('ADMIN', 'System administrator'),
-                      ('DOCTOR', 'Medical practitioner'),
-                      ('RECEPTIONIST', 'Front desk and appointment manager'),
-                      ('PATIENT', 'Patient portal user');
+('ADMIN', 'System administrator'),
+('DOCTOR', 'Medical practitioner'),
+('RECEPTIONIST', 'Front desk and appointment manager'),
+('PATIENT', 'Patient portal user');

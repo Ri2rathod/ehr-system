@@ -30,9 +30,10 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request, String ipAddress, String userAgent) {
         if (userService.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email is already registered");
         }
@@ -65,13 +66,14 @@ public class AuthService {
 
         User savedUser = userService.save(user);
 
-        String token = jwtService.generateToken(buildUserDetails(savedUser));
+        String accessToken = jwtService.generateToken(buildUserDetails(savedUser));
+        String refreshToken = refreshTokenService.create(savedUser, ipAddress, userAgent);
 
-        return buildAuthResponse(savedUser, token);
+        return buildAuthResponse(savedUser, accessToken, refreshToken);
     }
 
     @Transactional
-    public AuthResponse login(LoginRequest request, String remoteAddress) {
+    public AuthResponse login(LoginRequest request, String remoteAddress, String userAgent) {
         String email = request.getEmail().trim().toLowerCase();
 
         authenticationManager.authenticate(
@@ -84,9 +86,10 @@ public class AuthService {
         user.setLastLoginIp(remoteAddress);
         userService.save(user);
 
-        String token = jwtService.generateToken(buildUserDetails(user));
+        String accessToken = jwtService.generateToken(buildUserDetails(user));
+        String refreshToken = refreshTokenService.create(user, remoteAddress, userAgent);
 
-        return buildAuthResponse(user, token);
+        return buildAuthResponse(user, accessToken, refreshToken);
     }
 
     private UserDetails buildUserDetails(User user) {
@@ -104,9 +107,12 @@ public class AuthService {
                 .build();
     }
 
-    private AuthResponse buildAuthResponse(User user, String accessToken) {
+    private AuthResponse buildAuthResponse(User user, String accessToken, String refreshToken) {
         return AuthResponse.builder()
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .accessTokenExpiresIn(900L)
+                .refreshTokenExpiresIn(604800L)
                 .tokenType("Bearer")
                 .userId(user.getId())
                 .userUuid(user.getUuid())
@@ -145,5 +151,18 @@ public class AuthService {
         }
 
         return fullName.toString();
+    }
+
+    public String generateAccessToken(UserDetails userDetails) {
+        return jwtService.generateToken(userDetails);
+    }
+
+    public Long getUserIdByEmail(String email) {
+        return userService.getByEmail(email).getId();
+    }
+
+    public UserDetails loadUserByUserId(Long userId) {
+        User user = userService.getById(userId);
+        return buildUserDetails(user);
     }
 }

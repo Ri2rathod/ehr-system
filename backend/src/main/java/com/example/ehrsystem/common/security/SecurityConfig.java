@@ -33,7 +33,9 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/v1/auth/**",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/refresh",
                                 "/api/v1/test/public",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -41,6 +43,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/actuator/health"
                         ).permitAll()
+                        .requestMatchers("/api/v1/auth/logout", "/api/v1/auth/logout-all").authenticated()
                         .requestMatchers("/api/v1/test/admin").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

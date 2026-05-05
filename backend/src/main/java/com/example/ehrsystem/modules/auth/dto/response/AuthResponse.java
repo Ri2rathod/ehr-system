@@ -13,6 +13,9 @@ import java.util.UUID;
 public class AuthResponse {
 
     private String accessToken;
+    private String refreshToken;
+    private long accessTokenExpiresIn;
+    private long refreshTokenExpiresIn;
     private String tokenType;
 
     private Long userId;
