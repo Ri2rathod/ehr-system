@@ -1,0 +1,2 @@
+2026-05-06 22:51:30.206 [http-nio-8080-exec-10] ERROR o.h.e.jdbc.spi.SqlExceptionHelper - ERROR: duplicate key value violates unique constraint "uq_users_username"
+  Detail: Key (username)=(sampletest111) already exists.

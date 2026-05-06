@@ -11,6 +11,9 @@ import java.util.UUID;
 public  interface UserRepository  extends JpaRepository<User,Integer>{
     Optional<User> findByIdAndDeletedAtIsNull(Long id);
 
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.id = :id AND u.deletedAt IS NULL")
+    Optional<User> findByIdWithRoles(@Param("id") Long id);
+
     Optional<User> findByUuidAndDeletedAtIsNull(UUID uuid);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.email = :email AND u.deletedAt IS NULL")

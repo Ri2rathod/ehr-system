@@ -21,6 +21,11 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
     }
 
+    public User getByIdWithRoles(Long id) {
+        return userRepository.findByIdWithRoles(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+    }
+
     public User getByUuid(UUID uuid) {
         return userRepository.findByUuidAndDeletedAtIsNull(uuid)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with uuid: " + uuid));

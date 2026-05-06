@@ -80,7 +80,7 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(email, request.getPassword())
         );
 
-        User user = userService.getByEmail(email);
+        User user = userService.getByEmailWithRoles(email);
 
         user.setLastLoginAt(LocalDateTime.now());
         user.setLastLoginIp(remoteAddress);
@@ -162,7 +162,7 @@ public class AuthService {
     }
 
     public UserDetails loadUserByUserId(Long userId) {
-        User user = userService.getById(userId);
+        User user = userService.getByIdWithRoles(userId);
         return buildUserDetails(user);
     }
 }
