@@ -2,7 +2,9 @@ package com.example.ehrsystem.common.exception;
 
 import com.example.ehrsystem.common.response.ApiErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -115,6 +117,53 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request
+    ) {
+        String message = "A data conflict occurred";
+        String lowerMessage = ex.getMessage() != null ? ex.getMessage().toLowerCase() : "";
+
+        if (lowerMessage.contains("mrn")) {
+            message = "MRN already exists";
+        } else if (lowerMessage.contains("email")) {
+            message = "Email already exists for another patient";
+        } else if (lowerMessage.contains("user_id")) {
+            message = "Patient already linked to a user account";
+        } else if (lowerMessage.contains("uq_patients_email") || lowerMessage.contains("patients_email_key")) {
+            message = "Email already exists for another patient";
+        } else if (lowerMessage.contains("uq_patients_mrn") || lowerMessage.contains("patients_mrn_key")) {
+            message = "MRN already exists";
+        }
+
+        ApiErrorResponse response = ApiErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .error(HttpStatus.CONFLICT.getReasonPhrase())
+                .message(message)
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(OptimisticLockException.class)
+    public ResponseEntity<ApiErrorResponse> handleOptimisticLockException(
+            OptimisticLockException ex,
+            HttpServletRequest request
+    ) {
+        ApiErrorResponse response = ApiErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .error(HttpStatus.CONFLICT.getReasonPhrase())
+                .message("Patient record was modified by another user. Please refresh and try again.")
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

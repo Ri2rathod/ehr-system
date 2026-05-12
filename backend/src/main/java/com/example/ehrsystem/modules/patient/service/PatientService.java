@@ -1,8 +1,10 @@
 package com.example.ehrsystem.modules.patient.service;
 
+import com.example.ehrsystem.common.security.SecurityContextAccessor;
 import com.example.ehrsystem.common.util.AuditLogger;
 import com.example.ehrsystem.modules.common.service.MrnService;
 import com.example.ehrsystem.modules.patient.dto.request.CreatePatientRequest;
+import com.example.ehrsystem.modules.patient.dto.request.UpdatePatientRequest;
 import com.example.ehrsystem.modules.patient.dto.response.PatientResponse;
 import com.example.ehrsystem.modules.patient.entity.Patient;
 import com.example.ehrsystem.modules.patient.repository.PatientRepository;
@@ -17,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ public class PatientService {
     private final UserService userService;
     private final MrnService mrnService;
     private final AuditLogger auditLogger;
+    private final SecurityContextAccessor securityContext;
 
     @Transactional
     public PatientResponse create(CreatePatientRequest request) {
@@ -79,6 +81,9 @@ public class PatientService {
             patient.setUser(user);
         }
 
+        User currentUser = securityContext.getCurrentUser();
+        patient.setCreatedBy(currentUser);
+
         patient.setMrn(mrnService.generateMrn());
 
         Patient saved = patientRepository.save(patient);
@@ -122,12 +127,6 @@ public class PatientService {
         return toResponse(patient);
     }
 
-    public List<PatientResponse> search(String query) {
-        return patientRepository.searchPatients(query).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
     public Page<PatientResponse> search(String query, Pageable pageable) {
         return patientRepository.searchPatients(query, pageable)
                 .map(this::toResponse);
@@ -138,14 +137,13 @@ public class PatientService {
                 .map(this::toResponse);
     }
 
-    public List<PatientResponse> getByStatus(String status) {
-        return patientRepository.findByStatus(status).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public Page<PatientResponse> getByStatus(String status, Pageable pageable) {
+        return patientRepository.findByStatus(status, pageable)
+                .map(this::toResponse);
     }
 
     @Transactional
-    public PatientResponse update(Long id, CreatePatientRequest request) {
+    public PatientResponse update(Long id, UpdatePatientRequest request) {
         Patient patient = patientRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + id));
 
@@ -184,6 +182,9 @@ public class PatientService {
         if (request.getNotes() != null) patient.setNotes(request.getNotes());
         if (request.getStatus() != null) patient.setStatus(request.getStatus());
 
+        User currentUser = securityContext.getCurrentUser();
+        patient.setUpdatedBy(currentUser);
+
         Patient updated = patientRepository.save(patient);
         return toResponse(updated);
     }
@@ -192,21 +193,24 @@ public class PatientService {
     public void delete(Long id) {
         Patient patient = patientRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + id));
+
+        User currentUser = securityContext.getCurrentUser();
+        patient.setUpdatedBy(currentUser);
         patient.setDeletedAt(LocalDateTime.now());
         patientRepository.save(patient);
 
         Map<String, Object> auditDetails = new HashMap<>();
         auditDetails.put("patientId", id);
+        auditDetails.put("deletedBy", currentUser != null ? currentUser.getId() : "SYSTEM");
         auditLogger.logCustomEvent("PATIENT_DELETED", auditDetails);
     }
 
     private void logPatientViewed(Patient patient, String viewType) {
-        Map<String, Object> auditDetails = new HashMap<>();
-        auditDetails.put("patientId", patient.getId());
-        auditDetails.put("patientUuid", patient.getUuid());
-        auditDetails.put("mrn", patient.getMrn());
-        auditDetails.put("viewType", viewType);
-        auditLogger.logPatientRecordViewed("SYSTEM", patient.getId(), viewType);
+        auditLogger.logPatientRecordViewed(
+                "SYSTEM",
+                patient.getId(),
+                viewType
+        );
     }
 
     private String buildDisplayName(String firstName, String middleName, String lastName) {

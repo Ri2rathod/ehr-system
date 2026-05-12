@@ -2,6 +2,7 @@ package com.example.ehrsystem.modules.patient.controller;
 
 import com.example.ehrsystem.common.response.PagedResponse;
 import com.example.ehrsystem.modules.patient.dto.request.CreatePatientRequest;
+import com.example.ehrsystem.modules.patient.dto.request.UpdatePatientRequest;
 import com.example.ehrsystem.modules.patient.dto.response.PatientResponse;
 import com.example.ehrsystem.modules.patient.service.PatientService;
 import jakarta.validation.Valid;
@@ -15,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -23,7 +23,19 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PatientController {
 
+    private static final int MAX_PAGE_SIZE = 100;
+    private static final int DEFAULT_PAGE_SIZE = 20;
+
     private final PatientService patientService;
+
+    private Pageable createPageable(int page, int size, String sortBy, String sortDir) {
+        int actualSize = Math.min(size > 0 ? size : DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
+        int actualPage = Math.max(page, 0);
+        Sort sort = sortDir.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        return PageRequest.of(actualPage, actualSize, sort);
+    }
 
     @PostMapping
     @PreAuthorize("hasAuthority('PERM_PATIENT_CREATE')")
@@ -38,15 +50,12 @@ public class PatientController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase("asc") 
-                ? Sort.by(sortBy).ascending() 
-                : Sort.by(sortBy).descending();
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable = createPageable(page, size, sortBy, sortDir);
         Page<PatientResponse> result = patientService.getAll(pageable);
         return ResponseEntity.ok(PagedResponse.of(
-                result.getContent(), 
-                result.getNumber(), 
-                result.getSize(), 
+                result.getContent(),
+                result.getNumber(),
+                result.getSize(),
                 result.getTotalElements()));
     }
 
@@ -80,25 +89,34 @@ public class PatientController {
             @RequestParam String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = createPageable(page, size, "createdAt", "desc");
         Page<PatientResponse> result = patientService.search(q, pageable);
         return ResponseEntity.ok(PagedResponse.of(
-                result.getContent(), 
-                result.getNumber(), 
-                result.getSize(), 
+                result.getContent(),
+                result.getNumber(),
+                result.getSize(),
                 result.getTotalElements()));
     }
 
     @GetMapping("/status/{status}")
     @PreAuthorize("hasAuthority('PERM_PATIENT_READ')")
-    public ResponseEntity<List<PatientResponse>> getByStatus(@PathVariable String status) {
-        return ResponseEntity.ok(patientService.getByStatus(status));
+    public ResponseEntity<PagedResponse<PatientResponse>> getByStatus(
+            @PathVariable String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = createPageable(page, size, "createdAt", "desc");
+        Page<PatientResponse> result = patientService.getByStatus(status, pageable);
+        return ResponseEntity.ok(PagedResponse.of(
+                result.getContent(),
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements()));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('PERM_PATIENT_UPDATE')")
     public ResponseEntity<PatientResponse> update(@PathVariable Long id,
-                                                   @Valid @RequestBody CreatePatientRequest request) {
+                                                   @Valid @RequestBody UpdatePatientRequest request) {
         return ResponseEntity.ok(patientService.update(id, request));
     }
 
