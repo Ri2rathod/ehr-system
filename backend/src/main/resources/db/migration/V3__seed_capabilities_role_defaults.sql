@@ -30,6 +30,13 @@ INSERT INTO permissions (code, name, module, action, description) VALUES
     ('PERMISSION_READ',     'View Permissions',        'PERMISSION', 'READ',   'List and view all permissions'),
     ('PERMISSION_ASSIGN',   'Assign Permissions',      'PERMISSION', 'MANAGE', 'Assign or revoke permissions on roles or users'),
 
+    -- ── DOCTOR MODULE ────────────────────────────────────────
+    ('DOCTOR_READ',        'View Doctors',           'DOCTOR', 'READ',   'Search and view doctor profiles'),
+    ('DOCTOR_CREATE',      'Create Doctor',          'DOCTOR', 'CREATE', 'Add a new doctor profile'),
+    ('DOCTOR_UPDATE',      'Update Doctor',          'DOCTOR', 'UPDATE', 'Edit doctor professional information'),
+    ('DOCTOR_DELETE',      'Delete Doctor',          'DOCTOR', 'DELETE', 'Soft-delete a doctor profile'),
+    ('DOCTOR_VIEW_OWN',    'View Own Doctor Profile','DOCTOR', 'READ',   'Doctor can view their own profile'),
+
     -- ── PATIENT MODULE ────────────────────────────────────────
     ('PATIENT_READ',        'View Patients',           'PATIENT', 'READ',   'Search and view patient records'),
     ('PATIENT_CREATE',      'Register Patient',        'PATIENT', 'CREATE', 'Add a new patient record'),
@@ -108,6 +115,9 @@ WHERE p.code IN (
     'PATIENT_READ',
     'PATIENT_CREATE',
     'PATIENT_UPDATE',
+    'DOCTOR_READ',
+    'DOCTOR_UPDATE',
+    'DOCTOR_VIEW_OWN',
     'APPOINTMENT_READ',
     'APPOINTMENT_CREATE',
     'APPOINTMENT_UPDATE',
@@ -120,6 +130,8 @@ WHERE p.code IN (
     'PRESCRIPTION_CREATE',
     'PRESCRIPTION_UPDATE',
     'BILLING_READ',
+    'BILLING_CREATE',
+    'BILLING_UPDATE',
     'REPORT_READ'
 )
 ON CONFLICT (role_id, permission_id) DO NOTHING;
@@ -138,6 +150,7 @@ WHERE p.code IN (
     'PATIENT_READ',
     'PATIENT_CREATE',
     'PATIENT_UPDATE',
+    'DOCTOR_READ',
     'APPOINTMENT_READ',
     'APPOINTMENT_CREATE',
     'APPOINTMENT_UPDATE',
