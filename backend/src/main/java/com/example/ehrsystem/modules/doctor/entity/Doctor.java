@@ -1,13 +1,11 @@
 package com.example.ehrsystem.modules.doctor.entity;
 
-import com.example.ehrsystem.modules.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
 @Entity
