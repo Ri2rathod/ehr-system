@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,6 +40,15 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     @Query("SELECT p FROM Patient p WHERE p.deletedAt IS NULL")
     Page<Patient> findAllActive(Pageable pageable);
+
+    @Query("SELECT p FROM Patient p WHERE p.deletedAt IS NULL AND " +
+           "(LOWER(p.firstName) = LOWER(:firstName) AND LOWER(p.lastName) = LOWER(:lastName)) AND " +
+           "(p.dateOfBirth = :dateOfBirth OR p.phoneNumber = :phoneNumber)")
+    List<Patient> findDuplicates(
+            @Param("firstName") String firstName,
+            @Param("lastName") String lastName,
+            @Param("dateOfBirth") LocalDate dateOfBirth,
+            @Param("phoneNumber") String phoneNumber);
 
     boolean existsByMrnAndDeletedAtIsNull(String mrn);
 

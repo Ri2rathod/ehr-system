@@ -78,7 +78,7 @@ public class Patient {
     private String emergencyContactPhone;
 
     @Column(name = "registration_date", nullable = false)
-    private LocalDateTime registrationDate;
+    private LocalDateTime registeredAt;
 
     @Column(name = "status", nullable = false, length = 50)
     @Builder.Default
@@ -151,7 +151,7 @@ public class Patient {
     @PrePersist
     public void prePersist() {
         if (uuid == null) uuid = UUID.randomUUID();
-        if (registrationDate == null) registrationDate = LocalDateTime.now();
+        if (registeredAt == null) registeredAt = LocalDateTime.now();
         if (status == null) status = "ACTIVE";
         if (isDeceased == null) isDeceased = false;
         LocalDateTime now = LocalDateTime.now();

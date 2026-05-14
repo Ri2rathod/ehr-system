@@ -1,6 +1,7 @@
 package com.example.ehrsystem.modules.auth.security;
 
 import com.example.ehrsystem.common.constant.AuthConstants;
+import lombok.extern.slf4j.Slf4j;
 import com.example.ehrsystem.modules.role.entity.Role;
 import com.example.ehrsystem.modules.role.repository.RolePermissionRepository;
 import com.example.ehrsystem.modules.user.entity.Effect;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
@@ -52,13 +54,16 @@ public class CustomUserDetailsService implements UserDetailsService {
      * roles or overrides are modified for this user.
      */
     @Override
-    @Cacheable(value = AuthConstants.CACHE_USER_DETAILS, key = "#username")
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        String email = username.trim().toLowerCase();
 
         // ── Fetch user with roles in one query (JOIN FETCH) ─────────────────
-        User user = userRepository.findByEmailWithRoles(username)
+        User user = userRepository.findByEmailWithRoles(email)
                 .orElseThrow(() -> new UsernameNotFoundException(
-                        "User not found with email: " + username));
+                        "User not found with email: " + email));
+
+        log.debug("Loaded user {} from database with password hash present (length: {})", 
+                email, (user.getPasswordHash() == null ? "null" : user.getPasswordHash().length()));
 
         // ── Account status guards ────────────────────────────────────────────
         // Exceptions are thrown here; builder flags below reflect the same

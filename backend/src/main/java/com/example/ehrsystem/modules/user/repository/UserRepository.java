@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 import java.util.UUID;
 
-public  interface UserRepository  extends JpaRepository<User,Integer>{
+public  interface UserRepository  extends JpaRepository<User, Long>{
     Optional<User> findByIdAndDeletedAtIsNull(Long id);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.id = :id AND u.deletedAt IS NULL")

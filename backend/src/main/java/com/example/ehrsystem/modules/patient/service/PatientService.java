@@ -17,8 +17,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -142,6 +144,13 @@ public class PatientService {
                 .map(this::toResponse);
     }
 
+    public List<PatientResponse> findDuplicates(String firstName, String lastName, LocalDate dateOfBirth, String phoneNumber) {
+        return patientRepository.findDuplicates(firstName, lastName, dateOfBirth, phoneNumber)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public PatientResponse update(Long id, UpdatePatientRequest request) {
         Patient patient = patientRepository.findByIdAndDeletedAtIsNull(id)
@@ -249,7 +258,7 @@ public class PatientService {
                 .emergencyContactName(patient.getEmergencyContactName())
                 .emergencyContactRelationship(patient.getEmergencyContactRelationship())
                 .emergencyContactPhone(patient.getEmergencyContactPhone())
-                .registrationDate(patient.getRegistrationDate())
+                .registeredAt(patient.getRegisteredAt())
                 .status(patient.getStatus())
                 .isDeceased(patient.getIsDeceased())
                 .deceasedAt(patient.getDeceasedAt())

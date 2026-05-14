@@ -11,11 +11,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -48,7 +51,7 @@ public class PatientController {
     public ResponseEntity<PagedResponse<PatientResponse>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "registeredAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
         Pageable pageable = createPageable(page, size, sortBy, sortDir);
         Page<PatientResponse> result = patientService.getAll(pageable);
@@ -89,7 +92,7 @@ public class PatientController {
             @RequestParam String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        Pageable pageable = createPageable(page, size, "createdAt", "desc");
+        Pageable pageable = createPageable(page, size, "registeredAt", "desc");
         Page<PatientResponse> result = patientService.search(q, pageable);
         return ResponseEntity.ok(PagedResponse.of(
                 result.getContent(),
@@ -104,13 +107,23 @@ public class PatientController {
             @PathVariable String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        Pageable pageable = createPageable(page, size, "createdAt", "desc");
+        Pageable pageable = createPageable(page, size, "registeredAt", "desc");
         Page<PatientResponse> result = patientService.getByStatus(status, pageable);
         return ResponseEntity.ok(PagedResponse.of(
                 result.getContent(),
                 result.getNumber(),
                 result.getSize(),
                 result.getTotalElements()));
+    }
+
+    @GetMapping("/duplicates")
+    @PreAuthorize("hasAuthority('PERM_PATIENT_READ')")
+    public ResponseEntity<List<PatientResponse>> getDuplicates(
+            @RequestParam String firstName,
+            @RequestParam String lastName,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateOfBirth,
+            @RequestParam(name = "phone", required = false) String phoneNumber) {
+        return ResponseEntity.ok(patientService.findDuplicates(firstName, lastName, dateOfBirth, phoneNumber));
     }
 
     @PutMapping("/{id}")

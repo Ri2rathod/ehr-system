@@ -33,7 +33,7 @@ public class PatientResponse {
     private String emergencyContactName;
     private String emergencyContactRelationship;
     private String emergencyContactPhone;
-    private LocalDateTime registrationDate;
+    private LocalDateTime registeredAt;
     private String status;
     private Boolean isDeceased;
     private LocalDateTime deceasedAt;
