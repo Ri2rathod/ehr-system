@@ -29,7 +29,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 border-r border-outline-variant bg-surface-container-low flex flex-col h-full">
+    <aside className="w-64 border-r border-outline-variant bg-surface-container-low flex flex-col h-full z-99">
       <div className="p-6 border-b border-outline-variant">
         <Link href="/dashboard" className="flex items-center gap-2 text-primary">
           <Activity className="h-6 w-6" />

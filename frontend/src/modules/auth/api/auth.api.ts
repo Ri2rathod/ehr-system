@@ -13,8 +13,8 @@ export const authApi = {
   register: (payload: any) => 
     apiClient.post("/auth/register", payload).then(res => res.data),
 
-  logout: () => 
-    apiClient.post("/auth/logout").then(res => res.data),
+  logout: () =>
+    axios.post("/api/auth/logout", {}, { withCredentials: true }).then((res) => res.data),
 
   me: () =>
     axios.get<User>("/api/auth/me", { withCredentials: true }).then((res) => {
