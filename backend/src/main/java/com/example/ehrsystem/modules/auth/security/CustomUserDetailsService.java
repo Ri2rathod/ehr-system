@@ -69,6 +69,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (Boolean.FALSE.equals(user.getIsActive())) {
             throw new DisabledException("User account is inactive");
         }
+        if (user.getPasswordHash() == null || user.getPasswordHash().isBlank()) {
+            throw new IllegalStateException(
+                    "User password hash is missing for email: " + username);
+        }
 
         // ── Stage 1: Role authorities ────────────────────────────────────────
         Set<SimpleGrantedAuthority> authorities = new HashSet<>();

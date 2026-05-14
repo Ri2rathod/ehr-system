@@ -81,10 +81,10 @@ public class AuthService {
         );
 
         User user = userService.getByEmailWithRoles(email);
-
-        user.setLastLoginAt(LocalDateTime.now());
+        LocalDateTime loginTime = LocalDateTime.now();
+        userService.updateLastLoginAudit(user.getId(), loginTime, remoteAddress);
+        user.setLastLoginAt(loginTime);
         user.setLastLoginIp(remoteAddress);
-        userService.save(user);
 
         String accessToken = jwtService.generateToken(buildUserDetails(user));
         String refreshToken = refreshTokenService.create(user, remoteAddress, userAgent);

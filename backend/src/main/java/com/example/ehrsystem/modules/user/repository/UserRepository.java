@@ -2,6 +2,7 @@ package com.example.ehrsystem.modules.user.repository;
 
 import com.example.ehrsystem.modules.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -29,4 +30,10 @@ public  interface UserRepository  extends JpaRepository<User,Integer>{
     boolean existsByEmailAndDeletedAtIsNull(String email);
 
     boolean existsByUsernameAndDeletedAtIsNull(String username);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE User u SET u.lastLoginAt = :lastLoginAt, u.lastLoginIp = :lastLoginIp WHERE u.id = :id AND u.deletedAt IS NULL")
+    int updateLastLoginAudit(@Param("id") Long id,
+                             @Param("lastLoginAt") java.time.LocalDateTime lastLoginAt,
+                             @Param("lastLoginIp") String lastLoginIp);
 }

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -57,5 +58,13 @@ public class UserService {
     @Transactional
     public User save(User user) {
         return userRepository.save(user);
+    }
+
+    @Transactional
+    public void updateLastLoginAudit(Long userId, LocalDateTime lastLoginAt, String lastLoginIp) {
+        int updatedRows = userRepository.updateLastLoginAudit(userId, lastLoginAt, lastLoginIp);
+        if (updatedRows == 0) {
+            throw new EntityNotFoundException("User not found with id: " + userId);
+        }
     }
 }
