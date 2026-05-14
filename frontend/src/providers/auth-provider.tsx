@@ -3,35 +3,37 @@
 import React, { useEffect } from "react";
 import { useAuthStore } from "@/modules/auth/store/auth.store";
 import { authApi } from "@/modules/auth/api/auth.api";
-import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 const publicRoutes = ["/login", "/register", "/forgot-password"];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { user, setUser, setLoading, isLoading, logout } = useAuthStore();
-  const pathname = usePathname();
-  const router = useRouter();
+  const { setUser, setLoading, isLoading, logout } = useAuthStore();
 
   useEffect(() => {
     const initAuth = async () => {
+      const pathname = window.location.pathname;
+      const isPublicRoute = publicRoutes.includes(pathname);
+
+      if (isPublicRoute) {
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         const userData = await authApi.me();
         setUser(userData);
-      } catch (error) {
+      } catch {
         logout();
-        // Redirect to login if on a protected route
-        if (!publicRoutes.includes(pathname)) {
-          router.push("/login");
-        }
+        window.location.href = "/login";
       } finally {
         setLoading(false);
       }
     };
 
     initAuth();
-  }, [setUser, setLoading, logout, pathname, router]);
+  }, [setUser, setLoading, logout]);
 
   if (isLoading) {
     return (

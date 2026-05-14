@@ -1,9 +1,14 @@
 import { apiClient } from "@/services/api-client";
 import { LoginResponse, User } from "../types";
+import axios from "axios";
 
 export const authApi = {
-  login: (credentials: any) => 
-    apiClient.post<LoginResponse>("/auth/login", credentials).then(res => res.data),
+  login: (credentials: any) =>
+    axios
+      .post<{ success: boolean; user: LoginResponse }>("/api/auth/login", credentials, {
+        withCredentials: true,
+      })
+      .then((res) => res.data.user),
 
   register: (payload: any) => 
     apiClient.post("/auth/register", payload).then(res => res.data),
@@ -11,8 +16,8 @@ export const authApi = {
   logout: () => 
     apiClient.post("/auth/logout").then(res => res.data),
 
-  me: () => 
-    apiClient.get<User>("/auth/me").then(res => {
+  me: () =>
+    axios.get<User>("/api/auth/me", { withCredentials: true }).then((res) => {
       const data = res.data;
       // Explicit mapping for enterprise safety
       return {
