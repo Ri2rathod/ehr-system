@@ -17,7 +17,7 @@ export const authApi = {
     axios.post("/api/auth/logout", {}, { withCredentials: true }).then((res) => res.data),
 
   me: () =>
-    axios.get<User>("/api/auth/me", { withCredentials: true }).then((res) => {
+    apiClient.get<User>("/auth/me").then((res) => {
       const data = res.data;
       // Explicit mapping for enterprise safety
       return {

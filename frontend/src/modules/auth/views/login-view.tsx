@@ -39,6 +39,13 @@ export default function LoginPage() {
         roles: data.roles,
         lastLoginAt: data.lastLoginAt,
       });
+      const redirectAfterLogin =
+        typeof window !== 'undefined' ? sessionStorage.getItem('redirectAfterLogin') : null;
+      if (redirectAfterLogin) {
+        sessionStorage.removeItem('redirectAfterLogin');
+        router.push(redirectAfterLogin);
+        return;
+      }
       router.push('/dashboard');
     },
     onError: (error: any) => {

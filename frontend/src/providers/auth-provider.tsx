@@ -26,7 +26,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(userData);
       } catch {
         logout();
-        window.location.href = "/login";
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("session-expired"));
+        }
       } finally {
         setLoading(false);
       }

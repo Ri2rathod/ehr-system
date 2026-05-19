@@ -7,7 +7,6 @@ const API_URL = process.env.API_URL || "http://localhost:8080";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log(`${API_URL}/auth/me`);
 
     const backendResponse = await axios.post(`${API_URL}/auth/login`, body, {
       headers: {
