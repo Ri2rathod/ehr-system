@@ -107,3 +107,41 @@ INSERT INTO roles (name, description) VALUES
 ('DOCTOR', 'Medical practitioner'),
 ('RECEPTIONIST', 'Front desk and appointment manager'),
 ('PATIENT', 'Patient portal user');
+
+-- Seed default admin user
+INSERT INTO users (
+    email,
+    username,
+    password_hash,
+    first_name,
+    last_name,
+    display_name,
+    is_active,
+    is_email_verified,
+    is_phone_verified,
+    is_account_locked,
+    is_password_change_required,
+    failed_login_attempts
+) VALUES (
+    'admin@ehr.local',
+    'admin',
+    crypt('Admin@123', gen_salt('bf', 10)),
+    'System',
+    'Administrator',
+    'System Administrator',
+    TRUE,
+    TRUE,
+    FALSE,
+    FALSE,
+    TRUE,
+    0
+)
+ON CONFLICT (email) DO NOTHING;
+
+-- Assign ADMIN role to default admin user
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u
+JOIN roles r ON r.name = 'ADMIN'
+WHERE u.email = 'admin@ehr.local'
+ON CONFLICT (user_id, role_id) DO NOTHING;
