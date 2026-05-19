@@ -7,13 +7,24 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { loginSchema, LoginFormValues } from '../schemas/login.schema';
 import { authApi } from '../api/auth.api';
 import { useAuthStore } from '../store/auth.store';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function LoginPage() {
   const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const {
     register,
@@ -50,8 +61,10 @@ export default function LoginPage() {
     },
     onError: (error: any) => {
       console.log(error);
-      
-      alert(error.response?.data?.message || 'Login failed. Please check your clinical credentials.');
+
+      setErrorMessage(
+        error.response?.data?.message || 'Login failed. Please check your clinical credentials.'
+      );
     },
   });
 
@@ -182,6 +195,22 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={!!errorMessage}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Authentication Failed</AlertDialogTitle>
+            <AlertDialogDescription>
+              {errorMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setErrorMessage(null)}>
+              Close
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
