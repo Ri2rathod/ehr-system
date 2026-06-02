@@ -3,13 +3,13 @@ package com.example.ehrsystem.modules.patient.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.*;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -24,7 +24,6 @@ class PatientIntegrationTest {
     private ObjectMapper objectMapper;
 
     private String accessToken;
-    private String refreshToken;
 
     private String registerAndLogin(String suffix) throws Exception {
         String email = "patient.test." + suffix + "@example.com";
@@ -40,8 +39,8 @@ class PatientIntegrationTest {
 
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(registerPayload)))
-                .andExpect(status().isOk());
+                        .content( objectMapper.writeValueAsString(registerPayload )))
+                .andExpect(status().isCreated());
 
         var loginPayload = Map.of("email", email, "password", "Secret123!");
 
@@ -52,17 +51,17 @@ class PatientIntegrationTest {
                 .andReturn();
 
         String body = result.getResponse().getContentAsString();
-        return JsonPath.parse(body).read("$.data.accessToken");
+        return JsonPath.parse(body).read("$.accessToken");
     }
 
     private String getAdminToken() throws Exception {
-        var loginPayload = Map.of("email", "admin@ehr.com", "password", "Admin@123!");
+        var loginPayload = Map.of("email", "admin@ehr.local", "password", "Admin@123");
         var result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(loginPayload)))
                 .andExpect(status().isOk())
                 .andReturn();
-        return JsonPath.parse(result.getResponse().getContentAsString()).read("$.data.accessToken");
+        return JsonPath.parse(result.getResponse().getContentAsString()).read("$.accessToken");
     }
 
     @BeforeEach
@@ -87,9 +86,9 @@ class PatientIntegrationTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.mrn").exists())
-                .andExpect(jsonPath("$.data.uuid").exists())
-                .andExpect(jsonPath("$.data.firstName").value("John"));
+                .andExpect(jsonPath("$.mrn").exists())
+                .andExpect(jsonPath("$.uuid").exists())
+                .andExpect(jsonPath("$.firstName").value("John"));
     }
 
     @Test
@@ -203,7 +202,7 @@ class PatientIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Long patientId = JsonPath.parse(createResult.getResponse().getContentAsString()).read("$.data.id");
+        Long patientId = ((Number) JsonPath.parse(createResult.getResponse().getContentAsString()).read("$.id")).longValue();
 
         var updatePayload = Map.of(
                 "firstName", "UpdatedName",
@@ -216,8 +215,8 @@ class PatientIntegrationTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(updatePayload)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.firstName").value("UpdatedName"))
-                .andExpect(jsonPath("$.data.city").value("NewCity"));
+                .andExpect(jsonPath("$.firstName").value("UpdatedName"))
+                .andExpect(jsonPath("$.city").value("NewCity"));
     }
 
     @Test
@@ -236,7 +235,7 @@ class PatientIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Long patientId = JsonPath.parse(createResult.getResponse().getContentAsString()).read("$.data.id");
+        Long patientId = ((Number) JsonPath.parse(createResult.getResponse().getContentAsString()).read("$.id")).longValue();
 
         mockMvc.perform(delete("/api/v1/patients/" + patientId)
                         .header("Authorization", "Bearer " + accessToken))
@@ -296,12 +295,12 @@ class PatientIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        String uuid = JsonPath.parse(createResult.getResponse().getContentAsString()).read("$.data.uuid");
+        String uuid = JsonPath.parse(createResult.getResponse().getContentAsString()).read("$.uuid");
 
         mockMvc.perform(get("/api/v1/patients/uuid/" + uuid)
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.firstName").value("UuidTest"));
+                .andExpect(jsonPath("$.firstName").value("UuidTest"));
     }
 
     @Test
@@ -320,11 +319,11 @@ class PatientIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        String mrn = JsonPath.parse(createResult.getResponse().getContentAsString()).read("$.data.mrn");
+        String mrn = JsonPath.parse(createResult.getResponse().getContentAsString()).read("$.mrn");
 
         mockMvc.perform(get("/api/v1/patients/mrn/" + mrn)
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.firstName").value("MrnTest"));
+                .andExpect(jsonPath("$.firstName").value("MrnTest"));
     }
 }

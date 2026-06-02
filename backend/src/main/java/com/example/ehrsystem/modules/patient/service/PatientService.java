@@ -14,8 +14,10 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,12 +42,12 @@ public class PatientService {
     public PatientResponse create(CreatePatientRequest request) {
         if (request.getEmail() != null && !request.getEmail().isBlank()
                 && patientRepository.existsByEmailAndDeletedAtIsNull(request.getEmail())) {
-            throw new IllegalArgumentException("Email already exists for another patient");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists for another patient");
         }
 
         if (request.getPhoneNumber() != null && !request.getPhoneNumber().isBlank()
                 && patientRepository.existsByPhoneNumberAndDeletedAtIsNull(request.getPhoneNumber())) {
-            throw new IllegalArgumentException("Phone number already exists for another patient");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Phone number already exists for another patient");
         }
 
         Patient patient = Patient.builder()
