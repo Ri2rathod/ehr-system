@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/modules/auth/store/auth.store";
 import { authApi } from "@/modules/auth/api/auth.api";
 import { Loader2 } from "lucide-react";
@@ -8,14 +9,19 @@ import { Loader2 } from "lucide-react";
 const publicRoutes = ["/login", "/register", "/forgot-password"];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { setUser, setLoading, isLoading, logout } = useAuthStore();
+  const { user, setUser, setLoading, isLoading, logout } = useAuthStore();
+  const pathname = usePathname();
 
   useEffect(() => {
     const initAuth = async () => {
-      const pathname = window.location.pathname;
       const isPublicRoute = publicRoutes.includes(pathname);
 
       if (isPublicRoute) {
+        setLoading(false);
+        return;
+      }
+
+      if (user) {
         setLoading(false);
         return;
       }
@@ -35,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initAuth();
-  }, [setUser, setLoading, logout]);
+  }, [pathname, user, setUser, setLoading, logout]);
 
   if (isLoading) {
     return (

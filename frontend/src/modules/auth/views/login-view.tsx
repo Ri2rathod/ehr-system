@@ -7,28 +7,19 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { loginSchema, LoginFormValues } from '../schemas/login.schema';
 import { authApi } from '../api/auth.api';
 import { useAuthStore } from '../store/auth.store';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function LoginPage() {
   const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -61,10 +52,20 @@ export default function LoginPage() {
     },
     onError: (error: any) => {
       console.log(error);
-
-      setErrorMessage(
-        error.response?.data?.message || 'Login failed. Please check your clinical credentials.'
-      );
+      const serverMessage =
+        error.response?.data?.message || 'Login failed. Please check your clinical credentials.';
+      setError('root', {
+        type: 'server',
+        message: serverMessage,
+      });
+      setError('email', {
+        type: 'server',
+        message: '',
+      });
+      setError('password', {
+        type: 'server',
+        message: '',
+      });
     },
   });
 
@@ -115,6 +116,12 @@ export default function LoginPage() {
           </div>
 
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            {errors.root?.message && (
+              <Alert variant="destructive">
+                <AlertDescription>{errors.root.message}</AlertDescription>
+              </Alert>
+            )}
+
             <div className="space-y-2">
               <label className="label-caps block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
                 Email Address
@@ -130,7 +137,7 @@ export default function LoginPage() {
                   }`}
                 />
               </div>
-              {errors.email && (
+              {errors.email?.message && (
                 <p className="text-xs font-bold text-error mt-1">{errors.email.message}</p>
               )}
             </div>
@@ -155,7 +162,7 @@ export default function LoginPage() {
                   }`}
                 />
               </div>
-              {errors.password && (
+              {errors.password?.message && (
                 <p className="text-xs font-bold text-error mt-1">{errors.password.message}</p>
               )}
             </div>
@@ -196,21 +203,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <AlertDialog open={!!errorMessage}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Authentication Failed</AlertDialogTitle>
-            <AlertDialogDescription>
-              {errorMessage}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setErrorMessage(null)}>
-              Close
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

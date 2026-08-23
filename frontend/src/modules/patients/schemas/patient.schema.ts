@@ -26,8 +26,8 @@ export const patientSchema = z.object({
     .optional(),
   profilePhotoUrl: z.string().optional(),
 
-  email: z.email("Invalid email").or(z.literal("")).optional(),
-  countryCode: z.string().default("+91"),
+  email: z.string().email("Invalid email").or(z.literal("")).optional(),
+  countryCode: z.string(),
   phoneNumber: z
     .string()
     .min(7, "Phone number is too short")
@@ -53,7 +53,7 @@ export const patientSchema = z.object({
   clinicalNotes: z.string().optional(),
 
   tenant: z.string().min(1, "Tenant is required"),
-  status: z.enum(["ACTIVE", "INACTIVE", "ARCHIVED", "BLOCKED", "DECEASED"]).default("ACTIVE"),
+  status: z.enum(["ACTIVE", "INACTIVE", "ARCHIVED", "BLOCKED", "DECEASED"]),
   registrationDate: z.string().min(1, "Registration date is required"),
 });
 
