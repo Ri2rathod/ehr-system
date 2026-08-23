@@ -10,6 +10,7 @@ import com.example.ehrsystem.modules.doctor.entity.Doctor;
 import com.example.ehrsystem.modules.doctor.repository.DoctorRepository;
 import com.example.ehrsystem.modules.patient.entity.Patient;
 import com.example.ehrsystem.modules.patient.repository.PatientRepository;
+import com.example.ehrsystem.modules.scheduling.service.SlotGenerationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ public class AppointmentService {
     private final DoctorRepository doctorRepository;
     private final AppointmentNumberService appointmentNumberService;
     private final SecurityContextAccessor securityContext;
+    private final SlotGenerationService slotGenerationService;
 
     @Transactional
     public AppointmentResponse create(CreateAppointmentRequest request) {
@@ -43,7 +45,14 @@ public class AppointmentService {
         Doctor doctor = doctorRepository.findByUuidAndDeletedAtIsNull(request.getDoctorUuid())
                 .orElseThrow(() -> new EntityNotFoundException("Doctor not found with UUID: " + request.getDoctorUuid()));
 
-        // Conflict Validation
+        // Availability Validation: working hours → breaks → exceptions
+        slotGenerationService.validateSlotAvailability(
+                doctor,
+                request.getStartTime().toLocalDate(),
+                request.getStartTime().toLocalTime(),
+                request.getEndTime().toLocalTime());
+
+        // Conflict Validation: existing appointments
         if (appointmentRepository.existsOverlappingDoctorAppointment(
                 doctor.getId(), request.getStartTime(), request.getEndTime(), null)) {
             throw new IllegalArgumentException("Doctor is already booked for this time slot.");
@@ -134,6 +143,13 @@ public class AppointmentService {
         if (newStartTime.isAfter(newEndTime) || newStartTime.isEqual(newEndTime)) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
+
+        // Availability Validation: working hours → breaks → exceptions
+        slotGenerationService.validateSlotAvailability(
+                appointment.getDoctor(),
+                newStartTime.toLocalDate(),
+                newStartTime.toLocalTime(),
+                newEndTime.toLocalTime());
 
         // Conflict validation excluding this appointment
         if (appointmentRepository.existsOverlappingDoctorAppointment(
