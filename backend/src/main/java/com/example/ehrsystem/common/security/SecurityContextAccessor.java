@@ -42,6 +42,15 @@ public class SecurityContextAccessor {
         return auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal());
     }
 
+    public boolean hasAuthority(String authority) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return false;
+        }
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(authority));
+    }
+
     private String hashRef(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

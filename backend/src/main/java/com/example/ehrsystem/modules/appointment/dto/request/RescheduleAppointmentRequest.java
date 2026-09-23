@@ -20,4 +20,6 @@ public class RescheduleAppointmentRequest {
     @NotNull(message = "End time is required")
     @FutureOrPresent(message = "End time must be in the present or future")
     private LocalDateTime endTime;
+
+    private String reason;
 }

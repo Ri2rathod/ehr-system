@@ -75,6 +75,9 @@ public class Appointment {
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
 
+    @Column(name = "no_show_at")
+    private LocalDateTime noShowAt;
+
     @Column(name = "tenant_id")
     private Long tenantId;
 

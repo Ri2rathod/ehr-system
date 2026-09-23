@@ -1,4 +1,4 @@
--- V2__rbac_schema.sql: Introduce RBAC tables with nullable tenant_id
+ -- V2__rbac_schema.sql: Introduce RBAC tables with nullable tenant_id
 
 -- -------------------------------------------------
 -- 1. PERMISSIONS (global catalog, no tenant_id)
