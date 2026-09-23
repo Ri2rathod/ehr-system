@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import axios from "axios";
-
-const API_URL = process.env.API_URL || "http://localhost:8080";
+import { backendApi } from "@/lib/backend-api";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const backendResponse = await axios.post(`${API_URL}/auth/login`, body, {
+    const backendResponse = await backendApi.post("/auth/login", body, {
       headers: {
         "Content-Type": "application/json",
       },

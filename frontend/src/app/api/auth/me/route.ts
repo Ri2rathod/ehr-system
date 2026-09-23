@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
-
-const API_URL = process.env.API_URL || "http://localhost:8080";
+import { backendApi } from "@/lib/backend-api";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +8,7 @@ export async function GET(request: NextRequest) {
     if (!accessToken) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    const backendResponse = await axios.get(`${API_URL}/auth/me`, {
+    const backendResponse = await backendApi.get("/auth/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",

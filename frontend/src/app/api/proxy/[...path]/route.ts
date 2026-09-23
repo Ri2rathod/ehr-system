@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
-
-const API_URL = process.env.API_URL || "http://localhost:8080";
+import { backendApi } from "@/lib/backend-api";
 
 async function proxyRequest(
   request: NextRequest,
@@ -10,7 +8,7 @@ async function proxyRequest(
 ) {
   const { path } = await params;
   const pathString = path.join("/");
-  const url = `${API_URL}/${pathString}${request.nextUrl.search}`;
+  const url = `/${pathString}${request.nextUrl.search}`;
 
   try {
     const headers = new Headers();
@@ -26,7 +24,7 @@ async function proxyRequest(
 
     const body = method === "GET" || method === "DELETE" ? undefined : await request.text();
 
-    const response = await axios.request({
+    const response = await backendApi.request({
       url,
       method,
       headers: Object.fromEntries(headers.entries()),

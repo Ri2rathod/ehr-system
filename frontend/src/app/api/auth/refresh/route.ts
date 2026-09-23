@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import axios from "axios";
-
-const API_URL = process.env.API_URL || "http://localhost:8080";
+import { backendApi } from "@/lib/backend-api";
 
 export async function POST(request: NextRequest) {
   const refreshToken = request.cookies.get("refreshToken")?.value;
@@ -15,8 +13,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const backendResponse = await axios.post(
-      `${API_URL}/auth/refresh`,
+    const backendResponse = await backendApi.post(
+      "/auth/refresh",
       { refreshToken },
       {
         headers: { "Content-Type": "application/json" },

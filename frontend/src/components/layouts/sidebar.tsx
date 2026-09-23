@@ -20,7 +20,7 @@ const sidebarItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: Users, label: 'Patient Records', href: '/patients' },
   { icon: Stethoscope, label: 'Doctors', href: '/doctors' },
-  { icon: Calendar, label: 'Schedule', href: '/appointments' },
+  { icon: Calendar, label: 'Appointments', href: '/appointments' },
   { icon: Microscope, label: 'Labs & Imaging', href: '/encounters' },
   { icon: Pill, label: 'Pharmacy', href: '/billing' }, // Placeholder links
   { icon: Settings, label: 'Settings', href: '#' },

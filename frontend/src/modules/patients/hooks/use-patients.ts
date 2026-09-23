@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { patientApi } from "../api/patient.api";
 import { Patient, PatientListParams, PatientListResult } from "../types/patient.types";
 
-function normalizeListResponse(raw: any, fallback: { page: number; size: number }): PatientListResult {
+export function normalizeListResponse(raw: any, fallback: { page: number; size: number }): PatientListResult {
   if (Array.isArray(raw)) {
     return {
       items: raw as Patient[],

@@ -3,6 +3,8 @@ import { PatientListParams } from "../types/patient.types";
 
 export const patientApi = {
   getAll: (params: PatientListParams) => apiClient.get("/patients", { params }),
+  search: (params: { q: string; page?: number; size?: number }) =>
+    apiClient.get("/patients/search", { params }),
   getById: (id: string) => apiClient.get(`/patients/${id}`),
   create: (payload: any) => apiClient.post("/patients", payload),
   checkDuplicates: (params: { firstName: string; lastName: string; dateOfBirth: string; phone?: string }) =>

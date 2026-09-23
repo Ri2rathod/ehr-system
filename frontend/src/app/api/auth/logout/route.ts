@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import axios from "axios";
-
-const API_URL = process.env.API_URL || "http://localhost:8080";
+import { backendApi } from "@/lib/backend-api";
 
 export async function POST(request: NextRequest) {
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
 
   try {
-    await axios.post(
-      `${API_URL}/auth/logout`,
+    await backendApi.post(
+      "/auth/logout",
       {
         refreshToken,
       },
