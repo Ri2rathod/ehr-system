@@ -1,0 +1,7 @@
+{
+  "name": "ehr-system",
+  "private": true,
+  "scripts": {
+    "dev": "./dev.sh"
+  }
+}
