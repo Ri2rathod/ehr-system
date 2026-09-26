@@ -1,6 +1,6 @@
 import { AppointmentStatus, VisitType } from "../types/appointment.types";
 
-export const visitTypeLabel: Record<VisitType, string> = { CONSULTATION: "Consultation", FOLLOW_UP: "Follow-up", EMERGENCY: "Emergency", TELEMEDICINE: "Telemedicine", PROCEDURE: "Procedure", VACCINATION: "Vaccination" };
+export const visitTypeLabel: Record<VisitType, string> = { CONSULTATION: "Consultation", FOLLOW_UP: "Follow-up", EMERGENCY: "Emergency", TELEMEDICINE: "Telemedicine", PROCEDURE: "Procedure", VACCINATION: "Vaccination", WALK_IN: "Walk-in" };
 
 export function formatAppointmentDate(value?: string) {
   if (!value) return "—";

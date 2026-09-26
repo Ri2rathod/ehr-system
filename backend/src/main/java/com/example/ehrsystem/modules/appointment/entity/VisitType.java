@@ -6,5 +6,6 @@ public enum VisitType {
     EMERGENCY,
     TELEMEDICINE,
     PROCEDURE,
-    VACCINATION
+    VACCINATION,
+    WALK_IN
 }

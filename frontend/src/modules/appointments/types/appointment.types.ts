@@ -8,7 +8,7 @@ export type AppointmentStatus =
   | "NO_SHOW"
   | "RESCHEDULED";
 
-export type VisitType = "CONSULTATION" | "FOLLOW_UP" | "EMERGENCY" | "TELEMEDICINE" | "PROCEDURE" | "VACCINATION";
+export type VisitType = "CONSULTATION" | "FOLLOW_UP" | "EMERGENCY" | "TELEMEDICINE" | "PROCEDURE" | "VACCINATION" | "WALK_IN";
 
 export interface Appointment {
   id?: number;

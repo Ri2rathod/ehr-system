@@ -5,6 +5,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -148,6 +149,8 @@ public class GlobalExceptionHandler {
 
         if (lowerMessage.contains("mrn")) {
             message = "MRN already exists";
+        } else if (lowerMessage.contains("encounter")) {
+            message = "Encounter already exists for this appointment";
         } else if (lowerMessage.contains("email")) {
             message = "Email already exists for another patient";
         } else if (lowerMessage.contains("user_id")) {
@@ -178,6 +181,22 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT.value())
                 .error(HttpStatus.CONFLICT.getReasonPhrase())
                 .message("Patient record was modified by another user. Please refresh and try again.")
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ApiErrorResponse> handleOptimisticLockingFailureException(
+            OptimisticLockingFailureException ex,
+            HttpServletRequest request
+    ) {
+        ApiErrorResponse response = ApiErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .error(HttpStatus.CONFLICT.getReasonPhrase())
+                .message("The record was modified by another user. Please refresh and try again.")
                 .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .build();
