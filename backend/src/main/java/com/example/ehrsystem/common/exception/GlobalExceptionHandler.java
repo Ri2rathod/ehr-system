@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -147,7 +148,9 @@ public class GlobalExceptionHandler {
         String message = "A data conflict occurred";
         String lowerMessage = ex.getMessage() != null ? ex.getMessage().toLowerCase() : "";
 
-        if (lowerMessage.contains("mrn")) {
+        if (lowerMessage.contains("uq_diagnosis_primary")) {
+            message = "A primary diagnosis already exists for this encounter.";
+        } else if (lowerMessage.contains("mrn")) {
             message = "MRN already exists";
         } else if (lowerMessage.contains("encounter")) {
             message = "Encounter already exists for this appointment";
@@ -202,6 +205,22 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException ex,
+            HttpServletRequest request
+    ) {
+        ApiErrorResponse response = ApiErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message("Request body is invalid or contains an unsupported value")
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

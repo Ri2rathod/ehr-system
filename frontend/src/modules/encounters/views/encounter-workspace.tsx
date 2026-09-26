@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { EncounterStatusChip } from "../components/encounter-status-chip";
 import { VitalsSection } from "../components/vitals-section";
+import { DiagnosisSection } from "@/modules/diagnoses/components/diagnosis-section";
 import {
   useCancelEncounter,
   useCompleteEncounter,
@@ -342,6 +343,8 @@ export function EncounterWorkspace({ uuid }: { uuid: string }) {
           />
         </InfoSection>
       </section>
+
+      <DiagnosisSection encounterUuid={uuid} editable={editable} />
 
       <section className="grid gap-4 lg:grid-cols-2">
         <InfoSection title="Treatment plan">
