@@ -10,7 +10,7 @@ export function AlertDialog({ open, children }: { open: boolean; children: React
 export function AlertDialogContent({ children }: { children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest p-4 shadow-xl">{children}</div>
+      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg border border-outline-variant bg-surface-container-lowest p-4 shadow-xl">{children}</div>
     </div>
   );
 }
